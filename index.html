@@ -20,14 +20,10 @@
 
         <form>
             <fieldset>
-                <label for="nombre">
-                    Nombre:
-                </label>
+                <label for="nombre">Nombre:</label>
                 <input type="text" v-model="username" placeholder="Escribe aquí" name="nombre" id="nombre">
             </fieldset>
-            <label>
-                Tu nombre es: <span>{{ username }}</span>
-            </label>
+            <label>Tu nombre es: <span>{{ username }}</span></label>
         </form>
 
         <hr>
@@ -39,10 +35,31 @@
             <button @click="sumar">Sumar</button>
             <p>Resultado: {{ resultado }}</p>
         </div>
+
+        <hr>
+
+        <ul>
+            <li v-for="user in users" :key="user.nombre">
+                {{ user.nombre }} - {{ user.rol }}
+            </li>
+        </ul>
+
+        <form @submit.prevent="addUser">
+            <fieldset>
+                <label for="nombreNuevo">Nombre:</label>
+                <input type="text" v-model="newUser.nombre" placeholder="Escribe el nombre" id="nombreNuevo" required>
+            </fieldset>
+            <fieldset>
+                <label for="rolNuevo">Rol:</label>
+                <input type="text" v-model="newUser.rol" placeholder="Escribe el rol" id="rolNuevo" required>
+            </fieldset>
+            <button type="submit">Save new user</button>
+        </form>
+
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    
+
     <script>
       const { createApp, ref } = Vue
     
@@ -54,9 +71,21 @@
           const num1 = ref(0)
           const num2 = ref(0)
           const resultado = ref(0)
+          
+          const users = ref([])
+
+          const newUser = ref({ nombre: '', rol: '' })
 
           const sumar = () => {
             resultado.value = num1.value + num2.value
+          }
+
+          const addUser = () => {
+            if (newUser.value.nombre && newUser.value.rol) {
+              users.value.push({ ...newUser.value })  
+              newUser.value.nombre = ''  
+              newUser.value.rol = ''     
+            }
           }
 
           return {
@@ -66,11 +95,17 @@
             num1,
             num2,
             resultado,
-            sumar
+            sumar,
+            users,
+            newUser,
+            addUser
           }
         }
       }).mount('#main')
     </script>
 </body>
 </html>
+
+
+
 
