@@ -59,3 +59,39 @@ p {
     font-size: 16px;
     color: #333;
 }
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+table, th, td {
+    border: 1px solid black;
+}
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+th {
+    background-color: #f2f2f2;
+}
+
+
+.action-btns {
+    display: flex;
+    gap: 10px;
+}
+.edit-btn {
+    background-color: #f0ad4e;
+}
+.delete-btn {
+    background-color: #d9534f;
+}
+.edit-btn:hover {
+    background-color: #ec971f;
+}
+.delete-btn:hover {
+    background-color: #c9302c;
+}
+

@@ -3,108 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Aplicación</title>
+    <title>Registro y Sesión</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="main">
-        <h3>
-            Hola a la aplicación: {{ name_app }}
+        <h3 v-if="!isLoggedIn">
+            Registro e Iniciar sesión
         </h3>
 
-        <hr>
-
-        <button @click="contador++">
-            Click me: {{ contador }}
-        </button>
-
-        <form>
+        <!-- Formulario  -->
+        <form v-if="!isLoggedIn" @submit.prevent="registerAndLogin">
             <fieldset>
-                <label for="nombre">Nombre:</label>
-                <input type="text" v-model="username" placeholder="Escribe aquí" name="nombre" id="nombre">
+                <label for="nombreLogin">Nombre:</label>
+                <input type="text" v-model="loginData.nombre" placeholder="Escribe tu nombre" id="nombreLogin" required>
             </fieldset>
-            <label>Tu nombre es: <span>{{ username }}</span></label>
+            <fieldset>
+                <label for="password">Contraseña:</label>
+                <input type="password" v-model="loginData.password" placeholder="Escribe tu contraseña" id="password" required>
+            </fieldset>
+            <button type="submit">Registrarse e Iniciar Sesión</button>
+            <p v-if="errorMessage" style="color: red;">{{ errorMessage }}</p> 
         </form>
 
-        <hr>
+        <div v-if="isLoggedIn">
+            <h3>Bienvenido, {{ sessionData.nombre }}!</h3>
+            <button @click="logout">Cerrar sesión</button>
+            <button @click="toggleTable">Tabla</button>
 
-        <div>
-            <h4>Suma dos números</h4>
-            <input type="number" v-model.number="num1" placeholder="Número 1">
-            <input type="number" v-model.number="num2" placeholder="Número 2">
-            <button @click="sumar">Sumar</button>
-            <p>Resultado: {{ resultado }}</p>
+            <hr>
+
+            <!-- Tabla  -->
+            <table v-if="showTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(user, index) in storedUsers" :key="user.nombre">
+                        <td>{{ index + 1 }}</td>
+                        <td>{{ user.nombre }}</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="edit-btn">Editar</button>
+                                <button class="delete-btn">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-
-        <hr>
-
-        <ul>
-            <li v-for="user in users" :key="user.nombre">
-                {{ user.nombre }} - {{ user.rol }}
-            </li>
-        </ul>
-
-        <form @submit.prevent="addUser">
-            <fieldset>
-                <label for="nombreNuevo">Nombre:</label>
-                <input type="text" v-model="newUser.nombre" placeholder="Escribe el nombre" id="nombreNuevo" required>
-            </fieldset>
-            <fieldset>
-                <label for="rolNuevo">Rol:</label>
-                <input type="text" v-model="newUser.rol" placeholder="Escribe el rol" id="rolNuevo" required>
-            </fieldset>
-            <button type="submit">Save new user</button>
-        </form>
-
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
     <script>
-      const { createApp, ref } = Vue
+      const { createApp, ref, onMounted } = Vue
     
       createApp({
         setup() {
-          const name_app = ref('Mi primer app')
-          const username = ref('')
-          const contador = ref(0)
-          const num1 = ref(0)
-          const num2 = ref(0)
-          const resultado = ref(0)
-          
-          const users = ref([])
+          const loginData = ref({ nombre: '', password: '' })
+          const sessionData = ref({})
+          const storedUsers = ref([]) 
+          const isLoggedIn = ref(false)
+          const errorMessage = ref('') 
+          const showTable = ref(false) 
 
-          const newUser = ref({ nombre: '', rol: '' })
+          //REGISTRO E INICIO DE SESION
+          const registerAndLogin = () => {
+            const newUser = {
+              nombre: loginData.value.nombre,
+              password: loginData.value.password
+            }
 
-          const sumar = () => {
-            resultado.value = num1.value + num2.value
+            const users = JSON.parse(localStorage.getItem('users')) || []
+
+            //REVISAR SI EL USUARIO YA ESTA REGISTRADO
+            const userExists = users.some(user => user.nombre === newUser.nombre && user.password === newUser.password)
+            if (userExists) {
+              errorMessage.value = 'El usuario ya existe con el mismo nombre y contraseña.'
+              return
+            }
+
+            users.push(newUser)
+            localStorage.setItem('users', JSON.stringify(users))
+
+            //INICIAR SESION USUARIO
+            sessionStorage.setItem('user', JSON.stringify(newUser))
+            sessionData.value = newUser
+            isLoggedIn.value = true
+
+            storedUsers.value = users
+            errorMessage.value = ''
           }
 
-          const addUser = () => {
-            if (newUser.value.nombre && newUser.value.rol) {
-              users.value.push({ ...newUser.value })  
-              newUser.value.nombre = ''  
-              newUser.value.rol = ''     
+          //LOGOUT
+          const logout = () => {
+            sessionStorage.removeItem('user')
+            sessionData.value = {}
+            isLoggedIn.value = false
+            showTable.value = false 
+          }
+
+          
+          const toggleTable = () => {
+            showTable.value = !showTable.value
+          }
+
+          
+          const checkSession = () => {
+            const storedUser = sessionStorage.getItem('user')
+            if (storedUser) {
+              sessionData.value = JSON.parse(storedUser)
+              isLoggedIn.value = true
             }
           }
 
+          
+          const loadStoredUsers = () => {
+            const users = JSON.parse(localStorage.getItem('users')) || []
+            storedUsers.value = users
+          }
+
+          onMounted(() => {
+            checkSession()       
+            loadStoredUsers()      
+          })
+
           return {
-            name_app,
-            username,
-            contador,
-            num1,
-            num2,
-            resultado,
-            sumar,
-            users,
-            newUser,
-            addUser
+            loginData,
+            sessionData,
+            storedUsers,
+            isLoggedIn,
+            errorMessage,
+            showTable,
+            registerAndLogin,
+            logout,
+            toggleTable
           }
         }
       }).mount('#main')
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 
