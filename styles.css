@@ -24,7 +24,7 @@ hr {
     margin: 20px 0;
 }
 button {
-    background-color: #007bff;
+    background-color: #5095df;
     border: none;
     color: #fff;
     padding: 10px 20px;
@@ -33,7 +33,7 @@ button {
     font-size: 16px;
 }
 button:hover {
-    background-color: #0056b3;
+    background-color: #0f7bee;
 }
 fieldset {
     border: none;
@@ -92,6 +92,6 @@ th {
     background-color: #ec971f;
 }
 .delete-btn:hover {
-    background-color: #c9302c;
+    background-color: #e7150d;
 }
 

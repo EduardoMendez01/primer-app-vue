@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro y Sesión</title>
+    <title>Formulario</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,6 +17,10 @@
             <fieldset>
                 <label for="nombreLogin">Nombre:</label>
                 <input type="text" v-model="loginData.nombre" placeholder="Escribe tu nombre" id="nombreLogin" required>
+            </fieldset>
+            <fieldset>
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" v-model="loginData.email" placeholder="Escribe tu correo" id="email" required>
             </fieldset>
             <fieldset>
                 <label for="password">Contraseña:</label>
@@ -39,6 +43,7 @@
                     <tr>
                         <th>#</th>
                         <th>Nombre</th>
+                        <th>Correo</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -46,17 +51,16 @@
                     <tr v-for="(user, index) in storedUsers" :key="user.nombre">
                         <td>{{ index + 1 }}</td>
                         <td>{{ user.nombre }}</td>
+                        <td>{{ user.email }}</td>
                         <td>
                             <div class="action-btns">
-                                <button class="edit-btn">Editar</button>
-                                <button class="delete-btn">Eliminar</button>
+                                <button class="edit-btn" @click="editUser(index)">Editar</button>
+                                <button class="delete-btn" @click="deleteUser(index)">Eliminar</button>
                             </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
-        </div>
-    </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
@@ -65,73 +69,79 @@
     
       createApp({
         setup() {
-          const loginData = ref({ nombre: '', password: '' })
-          const sessionData = ref({})
-          const storedUsers = ref([]) 
-          const isLoggedIn = ref(false)
-          const errorMessage = ref('') 
-          const showTable = ref(false) 
+          const loginData = ref({ nombre: '', email: '', password: '' });
+          const sessionData = ref({});
+          const storedUsers = ref([]); 
+          const isLoggedIn = ref(false);
+          const errorMessage = ref(''); 
+          const showTable = ref(false); 
+          const showAddUserForm = ref(false); 
 
-          //REGISTRO E INICIO DE SESION
+          // REGISTRO E INICIO SESION
           const registerAndLogin = () => {
-            const newUser = {
+            const newUserData = {
               nombre: loginData.value.nombre,
+              email: loginData.value.email,
               password: loginData.value.password
-            }
+            };
 
-            const users = JSON.parse(localStorage.getItem('users')) || []
+            const users = JSON.parse(localStorage.getItem('users')) || [];
 
-            //REVISAR SI EL USUARIO YA ESTA REGISTRADO
-            const userExists = users.some(user => user.nombre === newUser.nombre && user.password === newUser.password)
+            const userExists = users.some(user => user.nombre === newUserData.nombre);
             if (userExists) {
-              errorMessage.value = 'El usuario ya existe con el mismo nombre y contraseña.'
-              return
+              errorMessage.value = 'El usuario ya existe con el mismo nombre.';
+              return;
             }
 
-            users.push(newUser)
-            localStorage.setItem('users', JSON.stringify(users))
+            users.push(newUserData);
+            localStorage.setItem('users', JSON.stringify(users));
 
-            //INICIAR SESION USUARIO
-            sessionStorage.setItem('user', JSON.stringify(newUser))
-            sessionData.value = newUser
-            isLoggedIn.value = true
+            // INICIAR SESION
+            sessionStorage.setItem('user', JSON.stringify(newUserData));
+            sessionData.value = newUserData;
+            isLoggedIn.value = true;
 
-            storedUsers.value = users
-            errorMessage.value = ''
+            storedUsers.value = users;
+            errorMessage.value = '';
           }
 
-          //LOGOUT
+          // LOGOUT
           const logout = () => {
-            sessionStorage.removeItem('user')
-            sessionData.value = {}
-            isLoggedIn.value = false
-            showTable.value = false 
+            sessionStorage.removeItem('user');
+            sessionData.value = {};
+            isLoggedIn.value = false;
+            showTable.value = false; 
           }
 
-          
           const toggleTable = () => {
-            showTable.value = !showTable.value
+            showTable.value = !showTable.value;
           }
 
-          
           const checkSession = () => {
-            const storedUser = sessionStorage.getItem('user')
+            const storedUser = sessionStorage.getItem('user');
             if (storedUser) {
-              sessionData.value = JSON.parse(storedUser)
-              isLoggedIn.value = true
+              sessionData.value = JSON.parse(storedUser);
+              isLoggedIn.value = true;
             }
           }
 
-          
           const loadStoredUsers = () => {
-            const users = JSON.parse(localStorage.getItem('users')) || []
-            storedUsers.value = users
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            storedUsers.value = users;
+          }
+
+          //ELIMINAR USUARIO
+          const deleteUser = (index) => {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            users.splice(0, 1);
+            localStorage.setItem('users', JSON.stringify(users)); 
+            loadStoredUsers();
           }
 
           onMounted(() => {
-            checkSession()       
-            loadStoredUsers()      
-          })
+            checkSession();       
+            loadStoredUsers();      
+          });
 
           return {
             loginData,
@@ -140,15 +150,20 @@
             isLoggedIn,
             errorMessage,
             showTable,
+            showAddUserForm,
             registerAndLogin,
             logout,
-            toggleTable
-          }
+            toggleTable,
+            deleteUser,
+          };
         }
       }).mount('#main')
     </script>
 </body>
 </html>
+
+
+
 
 
 
