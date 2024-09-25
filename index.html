@@ -64,6 +64,28 @@
                 </tbody>
             </table>
 
+            <button @click="showAddUserForm = true">Agregar Usuario</button>
+
+            <div v-if="showAddUserForm">
+                <h4>Agregar Nuevo Usuario</h4>
+                <fieldset>
+                    <label for="newNombre">Nombre:</label>
+                    <input type="text" v-model="newUser.nombre" id="newNombre" required>
+                </fieldset>
+                <fieldset>
+                    <label for="newEmail">Correo:</label>
+                    <input type="email" v-model="newUser.email" id="newEmail" required>
+                </fieldset>
+                <fieldset>
+                    <label for="newPassword">Contraseña:</label>
+                    <input type="password" v-model="newUser.password" id="newPassword" required>
+                </fieldset>
+                <button @click="addUser">Agregar</button>
+                <button @click="showAddUserForm = false">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
     <script>
@@ -78,6 +100,7 @@
           const errorMessage = ref(''); 
           const showTable = ref(false); 
           const showAddUserForm = ref(false); 
+          const newUser = ref({ nombre: '', email: '', password: '' });
 
           // REGISTRO E INICIO SESION
           const registerAndLogin = () => {
@@ -155,6 +178,21 @@
             }
           }
 
+          // AGREGAR USUARIO
+          const addUser = () => {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            users.push({ nombre: newUser.value.nombre, email: newUser.value.email, password: newUser.value.password });
+            localStorage.setItem('users', JSON.stringify(users));
+            loadStoredUsers();
+            newUser.value = { nombre: '', email: '', password: '' }; 
+            showAddUserForm.value = false;
+          }
+
+          onMounted(() => {
+            checkSession();       
+            loadStoredUsers();      
+          });
+
           return {
             loginData,
             sessionData,
@@ -169,12 +207,27 @@
             toggleTable,
             deleteUser,
             editUser,
+            addUser
           };
         }
       }).mount('#main')
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
