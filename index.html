@@ -44,6 +44,7 @@
                         <th>#</th>
                         <th>Nombre</th>
                         <th>Correo</th>
+                        <th>Contraseña</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -52,6 +53,7 @@
                         <td>{{ index + 1 }}</td>
                         <td>{{ user.nombre }}</td>
                         <td>{{ user.email }}</td>
+                        <td>{{ user.password }}</td>
                         <td>
                             <div class="action-btns">
                                 <button class="edit-btn" @click="editUser(index)">Editar</button>
@@ -61,6 +63,28 @@
                     </tr>
                 </tbody>
             </table>
+
+            <button @click="showAddUserForm = true">Agregar Usuario</button>
+
+            <div v-if="showAddUserForm">
+                <h4>Agregar Nuevo Usuario</h4>
+                <fieldset>
+                    <label for="newNombre">Nombre:</label>
+                    <input type="text" v-model="newUser.nombre" id="newNombre" required>
+                </fieldset>
+                <fieldset>
+                    <label for="newEmail">Correo:</label>
+                    <input type="email" v-model="newUser.email" id="newEmail" required>
+                </fieldset>
+                <fieldset>
+                    <label for="newPassword">Contraseña:</label>
+                    <input type="password" v-model="newUser.password" id="newPassword" required>
+                </fieldset>
+                <button @click="addUser">Agregar</button>
+                <button @click="showAddUserForm = false">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
@@ -76,6 +100,7 @@
           const errorMessage = ref(''); 
           const showTable = ref(false); 
           const showAddUserForm = ref(false); 
+          const newUser = ref({ nombre: '', email: '', password: '' });
 
           // REGISTRO E INICIO SESION
           const registerAndLogin = () => {
@@ -130,12 +155,37 @@
             storedUsers.value = users;
           }
 
-          //ELIMINAR USUARIO
+          // ELIMINAR USUARIO
           const deleteUser = (index) => {
             const users = JSON.parse(localStorage.getItem('users')) || [];
-            users.splice(0, 1);
+            users.splice(index, 1);
             localStorage.setItem('users', JSON.stringify(users)); 
+            loadStoredUsers(); 
+          }
+
+          // EDITAR USUARIO
+          const editUser = (index) => {
+            const newName = prompt("Introduce el nuevo nombre:", storedUsers.value[index].nombre);
+            const newEmail = prompt("Introduce el nuevo correo:", storedUsers.value[index].email);
+            const newPassword = prompt("Introduce la nueva contraseña:", storedUsers.value[index].password);
+            if (newName && newEmail && newPassword) {
+              const users = JSON.parse(localStorage.getItem('users')) || [];
+              users[index].nombre = newName;
+              users[index].email = newEmail;
+              users[index].password = newPassword; 
+              localStorage.setItem('users', JSON.stringify(users)); 
+              loadStoredUsers();
+            }
+          }
+
+          // AGREGAR USUARIO
+          const addUser = () => {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            users.push({ nombre: newUser.value.nombre, email: newUser.value.email, password: newUser.value.password });
+            localStorage.setItem('users', JSON.stringify(users));
             loadStoredUsers();
+            newUser.value = { nombre: '', email: '', password: '' }; 
+            showAddUserForm.value = false;
           }
 
           onMounted(() => {
@@ -151,10 +201,13 @@
             errorMessage,
             showTable,
             showAddUserForm,
+            newUser,
             registerAndLogin,
             logout,
             toggleTable,
             deleteUser,
+            editUser,
+            addUser
           };
         }
       }).mount('#main')
